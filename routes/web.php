@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CRUD;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MasterData\SiswaController;
 /*
 |--------------------------------------------------------------------------
@@ -14,11 +15,15 @@ use App\Http\Controllers\MasterData\SiswaController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', [AuthController::class,'index'])->name('login.index');
+Route::POST('login', [AuthController::class,'login'])->name('login');
+
+Route::group(['middleware'=>'CekLoginMiddleware'], function(){
+    Route::get('logout', [AuthController::class,'logout'])->name('login.logout');
+    Route::get('/dashboard', function () {return view('welcome');});
+    Route::get('crud', [CRUD::class,'Index']);
+    
+    Route::get('siswa', [SiswaController::class,'Index'])->name('siswa')->middleware('CekLoginMiddleware');
+    
+    Route::delete('siswa/delete/{id}', [SiswaController::class,'Delete'])->name('siswa.delete');
 });
-
-Route::get('crud', [CRUD::class,'Index']);
-
-Route::get('siswa', [SiswaController::class,'Index'])->name('siswa');
-Route::delete('siswa/delete/{id}', [SiswaController::class,'Delete'])->name('siswa.delete');
