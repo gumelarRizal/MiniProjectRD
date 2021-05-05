@@ -12,21 +12,18 @@
 <div class="card">
   <div class="row">
     <div class="col-12">
-      <div class="card-header">
-        <h4>Table Siswa</h4>
-      </div>
       <div class="card-body">
         <form action="">
           <div class="row">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="">Nama Ekskul</label>
+                <label for="">Nama Siswa</label>
                 <input type="text" class="form-control">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="">Kategori</label>
+                <label for="">Ekskul</label>
                 <input type="text" class="form-control">
               </div>
             </div>
@@ -38,23 +35,37 @@
           {{-- <a href="" class="btn btn-secondary"><i class="fa fa-redo-alt"></i> Reset</a> --}}
         </div>
         <hr>
-        <div class="table-responsive">
+        <table id="table-data" class="display table table-striped table-hover" width="100%">
+            <thead>
+                <tr>
+                    <th data-orderable="false">#</th>
+                    <th data-orderable="false" data-data="nama_siswa" data-visible="false">Siswa</th>
+                    <th data-orderable="false" data-data="nama_ekskul">Ekskul</th>
+                    <th data-orderable="true" data-data="nama_pembina">Pembina</th>
+                    <th data-orderable="true" data-data="nama_pelatih">Pelatih</th>
+                    <th data-orderable="true" data-data="nilai">Nilai</th>
+                </tr>
+            </thead>
+        </table>
+        {{-- <div class="table-responsive">
           <table class="table table-striped table-md">
             <tbody><tr>
               <th>#</th>
               <th>Siswa</th>
               <th>Ekskul</th>
               <th>Pembina</th>
+              <th>Pelatih</th>
               <th>Nilai</th>
-              <th>Action</th>
+              {{-- <th>Action</th>
             </tr>
-            @foreach ($pendaftaran_ekskuls as $item)<?php $no = 0?>
+            <?php $no = 0?>
+            @foreach ($pendaftaran_ekskuls as $item)
               <tr>
-                  <?php $no++?>
-                  <td> {{$no}} </td>
+                  <td>{{++$no}}</td>
                   <td>{{$item->nama_siswa}}</td>
                   <td>{{$item->nama_ekskul}}</td>
                   <td>{{$item->nama_pembina}}</td>
+                  <td>{{$item->nama_pelatih}}</td>
                   <td>{{$item->nilai}}</td>
                   <td>
                       <form  method="post" action ="{{ Route('daftar_ekskul.daftar')}}">
@@ -65,7 +76,9 @@
               </tr>
             @endforeach
             
-          </tbody></table>
+          </tbody>
+        </table>
+        {{$pendaftaran_ekskuls->links()}} --}}
         </div>
       </div>
     </div>
@@ -141,6 +154,12 @@
                 <div class="form-group col-sm-9">
                   <label for="daftar-ekskul">Ekskul</label>
                   <select class="form-control" name="daftar_ekskul" id="daftar-ekskul" placeholder="Pilih Ekskul">
+                    <option value="">--Pilih--</option>
+                    @foreach ($ekskuls as $item)
+                      <option value="<?php echo $item->id; ?>">
+                        Ekskul: <?php echo $item->nama_ekskul; ?> - Hari: <?php echo $item->hari; ?> - Pelatih: <?php echo $item->nama_pelatih; ?>
+                      </option>
+                    @endforeach
                   </select>
                 </div>
               </div>
@@ -172,6 +191,7 @@
           daftar_jk: {required: true},
           daftar_tempat_lahir: {required: true, maxlength: 20},
           daftar_tgl_lahir: {required: true},
+          daftar_ekskul: {required: true},
         },
         submitHandler: function(form) {
           ajaxData("{{ url('daftar_ekskul/daftar') }}", new FormData(form), refresh, true);
@@ -183,9 +203,23 @@
 
           alertSuccess(result.message);
       }
+
+      function setTableData() {
+          var reqOrder = [[1, 'desc']];
+          var reqData = { skpd: $('#filter-skpd').val() };
+          var colDef = [
+              // { render: renderActionButton, targets: -1 },
+              // { render: renderStatus, targets: -2 },
+              // { render: renderUpdate, targets: -3 },
+              // { render: renderInsert, targets: -4 },
+              // { render: renderNomor, targets: 2 }
+          ];
+
+          tableData = setDataTable('#table-data', "{{url('daftar_ekskul/read')}}", colDef, reqData, reqOrder);
+      }
       
       $(document).ready(function () {
-        
+        setTableData();
 
         // $("#daftar_ekskul").select2({
         //     placeholder: 'Pilih Eskul',

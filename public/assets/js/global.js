@@ -1,3 +1,48 @@
+function setDataTable(divId, dataUrl, colDef = [], requestData = null, requestOrder = null) {
+    var dataTableConf = {
+        responsive: {
+            details: {
+                display: $.fn.dataTable.Responsive.display.childRowImmediate
+            }
+        },
+        destroy: true,
+        autoWidth: true,
+        processing: true,
+        serverSide: true,
+        autoFill: false,
+        ajax: {
+            url: dataUrl,
+            type: "POST",
+            headers: {
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+            },
+            data: function (d) {
+                if (requestData !== null) {
+                    $.each(requestData, function (key, value) {
+                        d[key] = value;
+                    });
+                }
+            },
+            complete: function (d) {
+
+            }
+        },
+        columnDefs: colDef
+    }
+
+    colDef.push({ render: renderNumRow, targets: 0 });
+
+    if (requestOrder !== null) {
+        dataTableConf.order = requestOrder;
+    }
+
+    return $(divId).DataTable(dataTableConf);
+}
+
+function renderNumRow(data, type, row, meta) {
+    return meta.row + 1 + meta.settings._iDisplayStart;
+}
+
 function ajaxData(
     requestUrl,
     requestData,

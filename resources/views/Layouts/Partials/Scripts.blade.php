@@ -6,6 +6,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script> 
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script> 
+<script src="https://cdn.datatables.net/responsive/2.2.7/js/dataTables.responsive.min.js"></script> 
 <script src="{{url('assets/js/stisla.js')}}"></script>
 
 <!-- JS Libraies -->

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
-use App\Models\pendaftaran_ekskul;
+use App\Models\PendaftaranEkskul;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,31 +14,75 @@ class PendaftaranEkskulController extends Controller
     private $data;
     private $result;
 
-    private function _set_result() {
+    private function _set_result()
+    {
         $this->result = new stdClass();
         $this->result->status = false;
         $this->result->message = '';
         $this->result->data = new stdClass();
     }
 
-    public function __construct() {
-        // echo 'masuk default';
+    public function __construct()
+    {
         $this->_set_result();
     }
 
-    public function index(){
+    public function index()
+    {
         $pages = "Menu Pendaftaran Ekskul";
         $pendaftaran_ekskuls = DB::table('pendaftaran_ekskul')
-            ->select('pendaftaran_ekskul.id as id_pendaftaran', 'siswa.nama as nama_siswa', 
-                'ekskul.nama_ekskul as nama_ekskul', 'pembina.nama as nama_pembina', 'pendaftaran_ekskul.nilai as nilai')
+            ->select(
+                'pendaftaran_ekskul.id as id_pendaftaran',
+                'siswa.nama as nama_siswa',
+                'ekskul.nama_ekskul as nama_ekskul',
+                'pembina.nama as nama_pembina',
+                'pelatih.nama as nama_pelatih',
+                'pendaftaran_ekskul.nilai as nilai'
+            )
             ->join('ekskul', 'pendaftaran_ekskul.id_ekskul', '=', 'ekskul.id')
             ->join('siswa', 'pendaftaran_ekskul.id_siswa', '=', 'siswa.id')
             ->join('pembina', 'ekskul.id_pembina', '=', 'pembina.id', 'left')
+            ->join('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul', 'left')
+            ->join('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id', 'left')
+            ->paginate(10);
+
+        $ekskuls = DB::table('ekskul')
+            ->select('ekskul.id','ekskul.nama_ekskul', 'jadwal_ekskul.hari', 'jadwal_ekskul.tempat', 'pelatih.nama as nama_pelatih')
+            ->join('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul')
+            ->join('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id')
             ->get();
-        return view('Transaction.PendaftaranEkskul',['pendaftaran_ekskuls'=>$pendaftaran_ekskuls,'pages'=>$pages]);
+
+        return view(
+            'Transaction.PendaftaranEkskul',
+            ['pendaftaran_ekskuls' => $pendaftaran_ekskuls, 'pages' => $pages, 'ekskuls'=>$ekskuls]
+        );
     }
 
-    public function daftar(Request $request){
+    public function read(){
+        $pendaftaran_ekskuls = DB::table('pendaftaran_ekskul')
+            ->select(
+                'pendaftaran_ekskul.id as id_pendaftaran',
+                'siswa.nama as nama_siswa',
+                'ekskul.nama_ekskul as nama_ekskul',
+                'pembina.nama as nama_pembina',
+                'pelatih.nama as nama_pelatih',
+                'pendaftaran_ekskul.nilai as nilai'
+            )
+            ->join('ekskul', 'pendaftaran_ekskul.id_ekskul', '=', 'ekskul.id')
+            ->join('siswa', 'pendaftaran_ekskul.id_siswa', '=', 'siswa.id')
+            ->join('pembina', 'ekskul.id_pembina', '=', 'pembina.id', 'left')
+            ->join('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul', 'left')
+            ->join('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id', 'left')
+            ->get();
+
+        $this->result->status = true;
+        $this->result->data =$pendaftaran_ekskuls;
+
+        return response()->json($this->result);
+    }
+
+    public function daftar(Request $request)
+    {
         DB::beginTransaction();
         try {
             $siswa = new Siswa();
@@ -53,9 +97,9 @@ class PendaftaranEkskulController extends Controller
             $siswa->foto = $request->image;
             $siswa->save();
 
-            $daftar_ekskul = new pendaftaran_ekskul();
+            $daftar_ekskul = new PendaftaranEkskul();
             $daftar_ekskul->id_siswa = $siswa->id;
-            $daftar_ekskul->id_ekskul = 1; //todo
+            $daftar_ekskul->id_ekskul = $request->daftar_ekskul; //todo
             $daftar_ekskul->save();
 
             DB::commit();
@@ -66,7 +110,7 @@ class PendaftaranEkskulController extends Controller
             $this->result->status = false;
             $this->result->message = 'Data gagal disimpan. ' . $th->getMessage();
         }
-        
+
         // $pendaftaran_ekskul = new pendaftaran_ekskul();
         // $pendaftaran_ekskul->id_siswa = $request->daftar_siswa;
         // $pendaftaran_ekskul->id_ekskul = $request->daftar_ekskul;
@@ -78,8 +122,9 @@ class PendaftaranEkskulController extends Controller
         // return redirect()->route('daftar_ekskul')->with('alert-success','Data berhasil dihapus!');
     }
 
-    public function get_ekskul(Request $request) {
-        $ekskuls = DB::table('ekskul')->where('nama_ekskul', 'LIKE', '%'.$request->search.'%')->get();
+    public function get_ekskul(Request $request)
+    {
+        $ekskuls = DB::table('ekskul')->where('nama_ekskul', 'LIKE', '%' . $request->search . '%')->get();
 
         $datas = array();
         foreach ($ekskuls as $ekskul) {
@@ -91,10 +136,11 @@ class PendaftaranEkskulController extends Controller
         echo json_encode($datas);
     }
 
-    public function get_pembina(Request $request) {
+    public function get_pembina(Request $request)
+    {
         $users = DB::table('users')
             ->where([
-                ['nama', 'LIKE', '%'.$request->search.'%'],
+                ['nama', 'LIKE', '%' . $request->search . '%'],
                 ['jabatan', '=', 'pembina']
             ])->get();
 
@@ -108,10 +154,11 @@ class PendaftaranEkskulController extends Controller
         echo json_encode($datas);
     }
 
-    public function get_siswa(Request $request) {
+    public function get_siswa(Request $request)
+    {
         $users = DB::table('users')
             ->where([
-                ['nama', 'LIKE', '%'.$request->search.'%'],
+                ['nama', 'LIKE', '%' . $request->search . '%'],
                 ['jabatan', '=', 'siswa']
             ])->get();
 

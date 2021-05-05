@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class pendaftaran_ekskul extends Model
+class PendaftaranEkskul extends Model
 {
     use HasFactory;
     protected $table = "pendaftaran_ekskul";
