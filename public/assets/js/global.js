@@ -29,7 +29,10 @@ function setDataTable(divId, dataUrl, colDef = [], requestData = null, requestOr
         },
         columnDefs: colDef
     }
-
+    colDef.push({
+        "defaultContent": "-",
+        "targets": "_all"
+    });
     colDef.push({ render: renderNumRow, targets: 0 });
 
     if (requestOrder !== null) {

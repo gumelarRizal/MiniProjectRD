@@ -13,7 +13,7 @@
   <div class="row">
     <div class="col-12">
       <div class="card-body">
-        <form action="">
+        {{-- <form action="">
           <div class="row">
             <div class="col-md-6">
               <div class="form-group">
@@ -28,10 +28,10 @@
               </div>
             </div>
           </div>  
-        </form>
-        <div class="text-right">
+        </form> --}}
+        <div class="text-left">
           <a href="" id="button-daftar-ekskul" data-toggle="modal" data-target="#modal-daftar-ekskul" class="btn btn-primary"><i class="fa fa-plus"></i> Daftar</a>
-          <a href="" class="btn btn-info"><i class="fa fa-search"></i> Search</a>
+          {{-- <a href="" class="btn btn-info"><i class="fa fa-search"></i> Search</a> --}}
           {{-- <a href="" class="btn btn-secondary"><i class="fa fa-redo-alt"></i> Reset</a> --}}
         </div>
         <hr>
@@ -39,47 +39,14 @@
             <thead>
                 <tr>
                     <th data-orderable="false">#</th>
-                    <th data-orderable="false" data-data="nama_siswa" data-visible="false">Siswa</th>
-                    <th data-orderable="false" data-data="nama_ekskul">Ekskul</th>
+                    <th data-orderable="true" data-data="nama_siswa">Siswa</th>
+                    <th data-orderable="true" data-data="nama_ekskul">Ekskul</th>
                     <th data-orderable="true" data-data="nama_pembina">Pembina</th>
                     <th data-orderable="true" data-data="nama_pelatih">Pelatih</th>
-                    <th data-orderable="true" data-data="nilai">Nilai</th>
                 </tr>
             </thead>
         </table>
-        {{-- <div class="table-responsive">
-          <table class="table table-striped table-md">
-            <tbody><tr>
-              <th>#</th>
-              <th>Siswa</th>
-              <th>Ekskul</th>
-              <th>Pembina</th>
-              <th>Pelatih</th>
-              <th>Nilai</th>
-              {{-- <th>Action</th>
-            </tr>
-            <?php $no = 0?>
-            @foreach ($pendaftaran_ekskuls as $item)
-              <tr>
-                  <td>{{++$no}}</td>
-                  <td>{{$item->nama_siswa}}</td>
-                  <td>{{$item->nama_ekskul}}</td>
-                  <td>{{$item->nama_pembina}}</td>
-                  <td>{{$item->nama_pelatih}}</td>
-                  <td>{{$item->nilai}}</td>
-                  <td>
-                      <form  method="post" action ="{{ Route('daftar_ekskul.daftar')}}">
-                      {{csrf_field()}}
-                      <button type="submit" class="btn-xd btn-primary">Daftar</button>
-                      </form>
-                  </td>
-              </tr>
-            @endforeach
-            
-          </tbody>
-        </table>
-        {{$pendaftaran_ekskuls->links()}} --}}
-        </div>
+        
       </div>
     </div>
   </div>
@@ -206,7 +173,7 @@
 
       function setTableData() {
           var reqOrder = [[1, 'desc']];
-          var reqData = { skpd: $('#filter-skpd').val() };
+          var reqData = null;
           var colDef = [
               // { render: renderActionButton, targets: -1 },
               // { render: renderStatus, targets: -2 },
@@ -216,6 +183,11 @@
           ];
 
           tableData = setDataTable('#table-data', "{{url('daftar_ekskul/read')}}", colDef, reqData, reqOrder);
+      }
+
+      function renderActionButton(data, type, row){
+        var button = '<button type="button" class="btn btn-info btn-xs pull-right"></button>';
+        return button;
       }
       
       $(document).ready(function () {
