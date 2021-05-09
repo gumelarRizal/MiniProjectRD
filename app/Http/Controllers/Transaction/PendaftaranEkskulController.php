@@ -8,6 +8,7 @@ use App\Models\PendaftaranEkskul;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use stdClass;
 
 use function App\Helpers\data_table;
@@ -54,7 +55,17 @@ class PendaftaranEkskulController extends Controller
             'ekskul.nama_ekskul as nama_ekskul',
             'pembina.nama as nama_pembina',
             'pelatih.nama as nama_pelatih',
-            'pendaftaran_ekskul.nilai as nilai'
+            'pendaftaran_ekskul.nilai as nilai',
+            'siswa.id as id_siswa',
+            'siswa.nis',
+            'siswa.kelas',
+            'siswa.alamat',
+            'siswa.tempat_lahir',
+            'siswa.jenis_kelamin',
+            'siswa.no_telp',
+            'siswa.tanggal_lahir',
+            'pendaftaran_ekskul.id_ekskul',
+            'siswa.gen_foto',
         );
         $from = 'pendaftaran_ekskul';
         $where = null;
@@ -69,7 +80,6 @@ class PendaftaranEkskulController extends Controller
         $this->result->status = true;
         $this->result->draw = $request->draw;
         $this->result->data = data_table($request, $select, $from ,$where , $join);
-        // var_dump(data_table_total($request, $select, $from,false,$where , $join));
         $this->result->recordsTotal = data_table_total($request, $select, $from,false,$where , $join)->count();
         $this->result->recordsFiltered = data_table_total($request, $select, $from,true,$where , $join)->count();
 
@@ -80,6 +90,15 @@ class PendaftaranEkskulController extends Controller
     {
         DB::beginTransaction();
         try {
+
+            $imageName = null;
+            $oriImageName = null;
+            if(!is_null($request->image)){
+                $imageName = time().'.'.$request->image->extension(); 
+                $oriImageName = $request->image->getClientOriginalName();
+                $request->image->move(public_path('images'), $imageName);
+            }
+
             $siswa = new Siswa();
             $siswa->nis = $request->daftar_nis;
             $siswa->nama = $request->daftar_nama;
@@ -89,7 +108,8 @@ class PendaftaranEkskulController extends Controller
             $siswa->jenis_kelamin = $request->daftar_jk;
             $siswa->tanggal_lahir = $request->daftar_tgl_lahir;
             $siswa->no_telp = $request->daftar_no_telp;
-            $siswa->foto = $request->image;
+            $siswa->ori_foto = $oriImageName;
+            $siswa->gen_foto = $imageName;
             $siswa->save();
 
             $daftar_ekskul = new PendaftaranEkskul();
@@ -108,6 +128,84 @@ class PendaftaranEkskulController extends Controller
 
         return response()->json($this->result);
 
+    }
+
+    public function update_daftar(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $oldDataSiswa = $this->_get_siswa($request->id_siswa);
+            $imageName = null;
+            $oriImageName = null;
+            if(!is_null($request->image)){
+                $imageName = time().'.'.$request->image->extension(); 
+                $oriImageName = $request->image->getClientOriginalName();
+            }else{
+                $imageName = $oldDataSiswa->gen_foto;
+                $oriImageName = $oldDataSiswa->ori_foto;
+            }
+
+            $data_siswa = array(
+                'nis' => $request->daftar_nis,
+                'nama' => $request->daftar_nama,
+                'kelas' => $request->daftar_kelas,
+                'alamat' => $request->daftar_alamat,
+                'tempat_lahir' => $request->daftar_tempat_lahir,
+                'jenis_kelamin' => $request->daftar_jk,
+                'tanggal_lahir' => $request->daftar_tgl_lahir,
+                'no_telp' => $request->daftar_no_telp,
+                'ori_foto' => $oriImageName,
+                'gen_foto' => $imageName
+            );
+            DB::table('siswa')->where('id', '=', $request->id_siswa)->update($data_siswa);
+            
+            $data_daftar_ekskul = array(
+                'id_siswa' => $request->id_siswa,
+                'id_ekskul' => $request->daftar_ekskul
+            );
+
+            DB::table('pendaftaran_ekskul')->where('id', '=', $request->id_pendaftaran)->update($data_daftar_ekskul);
+
+            $image_path = public_path('images/') . $oldDataSiswa->gen_foto;
+            
+            if(File::exists($image_path)) {
+                File::delete($image_path);
+            }
+
+            DB::commit();
+            $request->image->move(public_path('images'), $imageName);
+            $this->result->status = true;
+            $this->result->message = 'Data berhasil disimpan.';
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            $this->result->status = false;
+            $this->result->message = 'Data gagal disimpan. ' . $th->getMessage();
+        }
+
+        return response()->json($this->result);
+
+    }
+
+    public function delete_daftar(Request $request){
+        DB::beginTransaction();
+        try {
+            DB::table('pendaftaran_ekskul')->where('id', '=', $request->id_pendaftaran)->delete();
+            $this->result->status = true;
+            $this->result->message = 'Data berhasil dihapus.';
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            $this->result->status = false;
+            $this->result->message = 'Data gagal disimpan. ' . $th->getMessage();
+        }
+
+        return response()->json($this->result);
+    }
+
+    private function _get_siswa($id){
+        $siswa = DB::table('siswa')->where('id', '=', $id)->first();
+        return $siswa;
     }
 
     public function get_ekskul(Request $request)

@@ -37,6 +37,8 @@ Route::group(['middleware'=>'CekLoginMiddleware'], function(){
     Route::group(['prefix'=>'daftar_ekskul'], function() {
         Route::get('/', [PendaftaranEkskulController::class,'index'])->name('daftar_ekskul');
         Route::post('/daftar', [PendaftaranEkskulController::class,'daftar'])->name('daftar_ekskul.daftar');
+        Route::post('/update_daftar', [PendaftaranEkskulController::class,'update_daftar'])->name('daftar_ekskul.update');
+        Route::post('/delete_daftar', [PendaftaranEkskulController::class,'delete_daftar'])->name('daftar_ekskul.delete');
         Route::post('/read', [PendaftaranEkskulController::class,'read'])->name('daftar_ekskul.read');
         Route::get('/get_siswa', [PendaftaranEkskulController::class,'get_siswa'])->name('daftar_ekskul.get_siswa');
         Route::get('/get_pembina', [PendaftaranEkskulController::class,'get_pembina'])->name('daftar_ekskul.get_pembina');

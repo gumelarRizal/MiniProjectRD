@@ -30,7 +30,8 @@
           </div>  
         </form> --}}
         <div class="text-left">
-          <a href="" id="button-daftar-ekskul" data-toggle="modal" data-target="#modal-daftar-ekskul" class="btn btn-primary"><i class="fa fa-plus"></i> Daftar</a>
+          <button type="button" id="button-daftar-ekskul" class="btn btn-primary" onclick="displayModalDaftar()"><i class="fa fa-plus"></i> Daftar</button>
+          
           {{-- <a href="" class="btn btn-info"><i class="fa fa-search"></i> Search</a> --}}
           {{-- <a href="" class="btn btn-secondary"><i class="fa fa-redo-alt"></i> Reset</a> --}}
         </div>
@@ -39,10 +40,12 @@
             <thead>
                 <tr>
                     <th data-orderable="false">#</th>
+                    <th data-orderable="false" data-data="id_pendaftaran" data-visible="false">ID</th>
                     <th data-orderable="true" data-data="nama_siswa">Siswa</th>
                     <th data-orderable="true" data-data="nama_ekskul">Ekskul</th>
                     <th data-orderable="true" data-data="nama_pembina">Pembina</th>
                     <th data-orderable="true" data-data="nama_pelatih">Pelatih</th>
+                    <th data-orderable="false">Aksi</th>
                 </tr>
             </thead>
         </table>
@@ -70,6 +73,8 @@
           <form class="form" id="form-data">
             <div class="modal-body">
               <div class="row">
+                <input type="hidden" name="id_pendaftaran" id="id-pendaftaran">
+                <input type="hidden" name="id_siswa" id="id-siswa">
                 <div class="form-group col-sm-6">
                   <label for="daftar-nis">NIS</label>
                   <input type="text" class="form-control" name="daftar_nis" id="daftar-nis" placeholder="NIS">
@@ -112,7 +117,7 @@
                 </div>
                 <div class="form-group col-sm-3">
                   <label for="daftar-tgl-lahir">Foto</label>
-                  <p><img src="{{asset('assets/img/avatar/avatar-1.png')}}" class="img img-rounded" id="upload-target" width="100%"></p>
+                  <p><img src="" class="img img-rounded" id="upload-target" width="100%"></p>
                   <label class="form-control btn btn-info">
                   <input type="file" class="form-control" name="image" id="daftar-foto" data-target="#upload-target" 
                     data-default="{{asset('assets/img/avatar/avatar-1.png')}}" style="display: none;"> Unggah Foto
@@ -161,84 +166,115 @@
           daftar_ekskul: {required: true},
         },
         submitHandler: function(form) {
-          ajaxData("{{ url('daftar_ekskul/daftar') }}", new FormData(form), refresh, true);
+          ajaxData("{{ url('daftar_ekskul') }}/"+action+"", new FormData(form), refresh, true);
         }
       });
+
+      function displayModalDaftar(){
+        resetForm('#form-data');
+        action = "daftar";
+        $('#modal-daftar-ekskul').modal();
+      }
 
       function refresh(result) {
           $('#modal-daftar-ekskul').modal('hide');
 
           alertSuccess(result.message);
+          tableData.draw(false);
       }
 
       function setTableData() {
-          var reqOrder = [[1, 'desc']];
+          var reqOrder = [[1, 'asc']];
           var reqData = null;
           var colDef = [
-              // { render: renderActionButton, targets: -1 },
-              // { render: renderStatus, targets: -2 },
-              // { render: renderUpdate, targets: -3 },
-              // { render: renderInsert, targets: -4 },
-              // { render: renderNomor, targets: 2 }
+              { render: renderActionButton, targets: -1 },
           ];
 
           tableData = setDataTable('#table-data', "{{url('daftar_ekskul/read')}}", colDef, reqData, reqOrder);
       }
 
       function renderActionButton(data, type, row){
-        var button = '<button type="button" class="btn btn-info btn-xs pull-right"></button>';
+        var button = '<button type="button" class="btn btn-info btn-xs" onclick="detailData(\'' + row.id_pendaftaran + '\')"><i class="far fa-edit"></i></button>'+
+                     '<button type="button" class="btn btn-danger btn-xs ml-1" onclick="swalDeleteConfirm(\'' + row.id_pendaftaran + '\')"><i class="far fa-trash-alt"></i></button>';
         return button;
       }
+
+      function deleteData(id){
+
+      }
       
+      function detailData(id){
+        var dataSet = tableData.rows().data();
+        var data = dataSet.filter(function (index) {
+          return index.id_pendaftaran == id;
+        });
+
+        resetForm('#form-data');
+        action = "update_daftar";
+        $("#id-siswa").val(data[0].id_siswa);
+        $("#id-pendaftaran").val(data[0].id_pendaftaran);
+        $("#daftar-nis").val(data[0].nis);
+        $("#daftar-nama").val(data[0].nama_siswa);
+        $("#daftar-kelas").val(data[0].kelas);
+        $("#daftar-alamat").val(data[0].alamat);
+        $("#daftar-no-telp").val(data[0].no_telp);
+        $('input[name="daftar_jk"][value="' + data[0].jenis_kelamin + '"]').prop('checked', true);
+        $("#daftar-tempat-lahir").val(data[0].tempat_lahir);
+        $("#daftar-tgl-lahir").val(data[0].tanggal_lahir);
+        $("#daftar-ekskul").val(data[0].id_ekskul);
+        $("#upload-target").prop('src', "{{url('/')}}/images/" + data[0].gen_foto);
+
+        $('#modal-daftar-ekskul').modal();
+      }
+
       $(document).ready(function () {
         setTableData();
 
-        // $("#daftar_ekskul").select2({
-        //     placeholder: 'Pilih Eskul',
-        //     minimumInputLength: 1,
-        //     multiple: false,
-        //     ajax: {
-        //         url: "{{route('daftar_ekskul.get_ekskul')}}",
-        //         type: "GET",
-        //         dataType: 'json',
-        //         data: function (params) {
-        //           return {
-        //             // _token: CSRF_TOKEN,
-        //             search: params.term // search term
-        //           };
-        //         },
-        //         processResults: function (response) {
-        //           return {
-        //             results: response
-        //           };
-        //         },
-        //         cache: true
-        //     }
-        // });
       });
 
-      
-
-      $(".swal-confirm").click(function(e) {
-        let id = e.target.dataset.id;
-        let name = e.target.dataset.name;
-          swal({
-              title: 'Apakah kamu yakin akan menghapus data ' + name + '?',
-              text: 'Setelah data dihapus, data tidak bisa di kembalikan',
-              icon: 'warning',
-              buttons: true,
-              dangerMode: true,
-            })
-            .then((willDelete) => {
-              if (willDelete) {
-                  swal('Poof! Your imaginary file has been deleted!', {
-                    icon: 'success',
-                  });
-                  $(`#delete${id}`).submit();
-              } else {
-              swal('Your imaginary file is safe!');
-              }
-            });
+      function swalDeleteConfirm(id){
+        var dataSet = tableData.rows().data();
+        var data = dataSet.filter(function (index) {
+          return index.id_pendaftaran == id;
         });
+       
+        swal({
+            title: 'Apakah kamu yakin akan menghapus data pendaftaran siswa ' + data[0].nama_siswa + '?',
+            text: 'Setelah data dihapus, data tidak bisa di kembalikan',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+          })
+          .then((willDelete) => {
+            if (willDelete) {
+                // $(`#delete${id}`).submit();
+                ajaxData("{{ url('daftar_ekskul/delete_daftar') }}", { id_pendaftaran: id }, refresh);
+            } else {
+              swal('Your imaginary file is safe!');
+            }
+          });
+      }
+
+      // $(".swal-confirm").click(function(e) {
+      //   let id = e.target.dataset.id;
+      //   let name = e.target.dataset.name;
+      //     swal({
+      //         title: 'Apakah kamu yakin akan menghapus data ' + name + '?',
+      //         text: 'Setelah data dihapus, data tidak bisa di kembalikan',
+      //         icon: 'warning',
+      //         buttons: true,
+      //         dangerMode: true,
+      //       })
+      //       .then((willDelete) => {
+      //         if (willDelete) {
+      //             swal('Poof! Your imaginary file has been deleted!', {
+      //               icon: 'success',
+      //             });
+      //             $(`#delete${id}`).submit();
+      //         } else {
+      //         swal('Your imaginary file is safe!');
+      //         }
+      //       });
+      //   });
     </script>
 @endpush

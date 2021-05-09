@@ -1,3 +1,5 @@
+var action;
+
 function setDataTable(divId, dataUrl, colDef = [], requestData = null, requestOrder = null) {
     var dataTableConf = {
         responsive: {
@@ -103,3 +105,37 @@ function alertSuccess(str, url = null) {
         }
     );
 }
+
+function resetForm(elem) {
+    $(elem)[0].reset();
+    $(elem + ' span.error').remove();
+    $(elem + ' :input').removeClass('error');
+    $(elem + ' select').trigger('change');
+    $(elem + ' textarea').html('');
+    $(elem + ' input[type="file"]').each(function (index, el) {
+        var target = $(el).data('target');
+
+        $(target).prop('src', $(el).data('default'));
+    });
+}
+
+$('input[type="file"]').change(function (e) {
+    if ($(this).data('target') !== undefined) {
+        var imageType = ['png', 'jpg', 'jpeg', 'PNG', 'JPG', 'JPEG'];
+        var target = $(this).data('target');
+        var reader = new FileReader();
+        var uploadedFile = this.files[0];
+        var fileType = uploadedFile.name.split('.');
+        fileType = fileType[fileType.length - 1];
+
+        if ($.inArray(fileType, imageType) != -1) {
+            reader.onload = function (event) {
+                $(target).prop('src', event.target.result);
+            }
+
+            reader.readAsDataURL(uploadedFile);
+        } else {
+            alert('Tipe file harus sesuai');
+        }
+    }
+});

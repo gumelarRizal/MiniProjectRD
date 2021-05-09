@@ -51,6 +51,15 @@ function data_table(Request $request, $select, $from, $where = null, $join = nul
         $queryBuilder->whereRaw(' 1=1 ');
     }
 
+    // order 
+    if ($request['order']) {
+        $order = $request['order'];
+
+        foreach ($order as $key => $value) {
+            $queryBuilder->orderBy($columns[$value['column']]['data'], $value['dir']);
+        }
+    }
+
     $queryBuilder->skip($request['start'])
                 ->take($request['length']);
     
