@@ -26,10 +26,16 @@
             </div>
           </div>  
         </form>
-        <div class="text-right">
-          <a href="" class="btn btn-primary"><i class="fa fa-plus"></i> Tambah Data</a>
-          <a href="" class="btn btn-info"><i class="fa fa-search"></i> Search</a>
-          <a href="" class="btn btn-secondary"><i class="fa fa-redo-alt"></i> Reset</a>
+        <div class="row">
+          <div class="col-md-6">
+            <a href="#"data-toggle="modal" data-target="#modal-mm-ekskul" class="btn btn-primary"><i class="fa fa-plus"></i> Tambah Data</a>
+
+          </div>
+          <div class="col-md-6 text-right">
+            <a href="" class="btn btn-info"><i class="fa fa-search"></i> Search</a>
+            <a href="" class="btn btn-secondary"><i class="fa fa-redo-alt"></i> Reset</a>
+
+          </div>
         </div>
         <hr>
         <div class="table-responsive">
@@ -76,8 +82,10 @@
   </div>
   <div class="card-footer text-right">
   </div>
-  </div>
+</div>
 @endsection
+@include('Masterdata.Siswa.SiswaModal')
+
 @push('page-scripts')
   <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script> 
 @endpush
