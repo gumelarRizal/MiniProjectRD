@@ -30,6 +30,10 @@ function data_table(Request $request, $select, $from, $where = null, $join = nul
         }
     }
 
+    if ( ! is_null($group_by)) {
+        $queryBuilder->groupBy($group_by);
+    }
+
     // filter
     $columns = $request['columns'];
     $search = $request['search'];
@@ -89,6 +93,10 @@ function data_table_total(Request $request,$select, $from, $filter = false, $whe
                 $queryBuilder->join($value[0], $value[1], $value[2], $value[3]);
             }
         }
+    }
+
+    if ( ! is_null($group_by)) {
+        $queryBuilder->groupBy($group_by);
     }
 
     if ($filter == true) {

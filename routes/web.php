@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MasterData\SiswaController;
 use App\Http\Controllers\Report\LaporanEkskulController;
 use App\Http\Controllers\Transaction\PendaftaranEkskulController;
+use App\Http\Controllers\Transaction\InputNilaiController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -47,5 +48,11 @@ Route::group(['middleware'=>'CekLoginMiddleware'], function(){
 
     Route::group(['prefix'=>'report'], function() {
         Route::get('/', [LaporanEkskulController::class,'index'])->name('laporan_ekskul.index');
+        Route::post('/read', [LaporanEkskulController::class,'read'])->name('laporan_ekskul.read');
+    });
+
+    Route::group(['prefix'=>'input_nilai'], function() {
+        Route::get('/', [InputNilaiController::class,'index'])->name('input_nilai');
+        Route::post('/read', [InputNilaiController::class,'read'])->name('input_nilai.read');
     });
 });

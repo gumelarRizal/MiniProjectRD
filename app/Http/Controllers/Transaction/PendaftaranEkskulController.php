@@ -40,11 +40,19 @@ class PendaftaranEkskulController extends Controller
             ->select('ekskul.id','ekskul.nama_ekskul', 'jadwal_ekskul.hari', 'jadwal_ekskul.tempat', 'pelatih.nama as nama_pelatih')
             ->join('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul')
             ->join('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id')
+            ->where('category', '=', '1')
+            ->get();
+
+        $ekskulsOpt = DB::table('ekskul')
+            ->select('ekskul.id','ekskul.nama_ekskul', 'jadwal_ekskul.hari', 'jadwal_ekskul.tempat', 'pelatih.nama as nama_pelatih')
+            ->join('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul')
+            ->join('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id')
+            ->where('category', '=', '0')
             ->get();
 
         return view(
             'Transaction.PendaftaranEkskul',
-            ['pages' => $pages, 'ekskuls'=>$ekskuls]
+            ['pages' => $pages, 'ekskuls'=>$ekskuls, 'ekskulsOpt'=>$ekskulsOpt]
         );
     }
 
@@ -65,6 +73,7 @@ class PendaftaranEkskulController extends Controller
             'siswa.no_telp',
             'siswa.tanggal_lahir',
             'pendaftaran_ekskul.id_ekskul',
+            'pendaftaran_ekskul.id_ekskul_opt',
             'siswa.gen_foto',
         );
         $from = 'pendaftaran_ekskul';
@@ -88,46 +97,78 @@ class PendaftaranEkskulController extends Controller
 
     public function daftar(Request $request)
     {
-        DB::beginTransaction();
-        try {
-
-            $imageName = null;
-            $oriImageName = null;
-            if(!is_null($request->image)){
-                $imageName = time().'.'.$request->image->extension(); 
-                $oriImageName = $request->image->getClientOriginalName();
-                $request->image->move(public_path('images'), $imageName);
-            }
-
-            $siswa = new Siswa();
-            $siswa->nis = $request->daftar_nis;
-            $siswa->nama = $request->daftar_nama;
-            $siswa->kelas = $request->daftar_kelas;
-            $siswa->alamat = $request->daftar_alamat;
-            $siswa->tempat_lahir = $request->daftar_tempat_lahir;
-            $siswa->jenis_kelamin = $request->daftar_jk;
-            $siswa->tanggal_lahir = $request->daftar_tgl_lahir;
-            $siswa->no_telp = $request->daftar_no_telp;
-            $siswa->ori_foto = $oriImageName;
-            $siswa->gen_foto = $imageName;
-            $siswa->save();
-
-            $daftar_ekskul = new PendaftaranEkskul();
-            $daftar_ekskul->id_siswa = $siswa->id;
-            $daftar_ekskul->id_ekskul = $request->daftar_ekskul; 
-            $daftar_ekskul->save();
-
-            DB::commit();
-            $this->result->status = true;
-            $this->result->message = 'Data berhasil disimpan.';
-        } catch (\Throwable $th) {
-            DB::rollBack();
+        $oldDataSiswa = $this->_get_siswa_by_nis($request->daftar_nis);
+        $oldPendaftaran = $this->_get_pendaftaran_already_exist($oldDataSiswa->id, $request->daftar_ekskul);
+        if($oldPendaftaran){
             $this->result->status = false;
-            $this->result->message = 'Data gagal disimpan. ' . $th->getMessage();
+            $this->result->message = 'Siswa ini telah mendaftar diekskul yang dituju. ';
+            return response()->json($this->result);
         }
 
-        return response()->json($this->result);
+        if($oldDataSiswa){
+            return $this->update_daftar($request);
+        }else{
 
+            DB::beginTransaction();
+            try {
+
+                $imageName = null;
+                $oriImageName = null;
+
+                if(!is_null($request->image)){
+                    $imageName = time().'.'.$request->image->extension(); 
+                    $oriImageName = $request->image->getClientOriginalName();
+                    $request->image->move(public_path('images'), $imageName);
+                }
+
+                
+
+                if(!$oldDataSiswa){
+                    $siswa = new Siswa();
+                    $siswa->nis = $request->daftar_nis;
+                    $siswa->nama = $request->daftar_nama;
+                    $siswa->kelas = $request->daftar_kelas;
+                    $siswa->alamat = $request->daftar_alamat;
+                    $siswa->tempat_lahir = $request->daftar_tempat_lahir;
+                    $siswa->jenis_kelamin = $request->daftar_jk;
+                    $siswa->tanggal_lahir = $request->daftar_tgl_lahir;
+                    $siswa->no_telp = $request->daftar_no_telp;
+                    $siswa->ori_foto = $oriImageName;
+                    $siswa->gen_foto = $imageName;
+                    $siswa->save();
+                }else{
+                    
+                    $this->update_daftar($request);
+                    // $oldDataSiswa->nis = $request->daftar_nis;
+                    // $oldDataSiswa->nama = $request->daftar_nama;
+                    // $oldDataSiswa->kelas = $request->daftar_kelas;
+                    // $oldDataSiswa->alamat = $request->daftar_alamat;
+                    // $oldDataSiswa->tempat_lahir = $request->daftar_tempat_lahir;
+                    // $oldDataSiswa->jenis_kelamin = $request->daftar_jk;
+                    // $oldDataSiswa->tanggal_lahir = $request->daftar_tgl_lahir;
+                    // $oldDataSiswa->no_telp = $request->daftar_no_telp;
+                    // $oldDataSiswa->ori_foto = $oriImageName;
+                    // $oldDataSiswa->gen_foto = $imageName;
+                    // $oldDataSiswa->save();
+                }
+
+                // $daftar_ekskul = new PendaftaranEkskul();
+                // $daftar_ekskul->id_siswa = (!$oldDataSiswa) ? $oldDataSiswa->id : $siswa->id;
+                // $daftar_ekskul->id_ekskul = $request->daftar_ekskul; 
+                // $daftar_ekskul->id_ekskul_opt = $request->daftar_ekskul_opt; 
+                // $daftar_ekskul->save();
+
+                DB::commit();
+                $this->result->status = true;
+                $this->result->message = 'Data berhasil disimpan.';
+            } catch (\Throwable $th) {
+                DB::rollBack();
+                $this->result->status = false;
+                $this->result->message = 'Data gagal disimpan. ' . $th->getMessage();
+            }
+
+            return response()->json($this->result);
+        }
     }
 
     public function update_daftar(Request $request)
@@ -135,7 +176,7 @@ class PendaftaranEkskulController extends Controller
         DB::beginTransaction();
         try {
 
-            $oldDataSiswa = $this->_get_siswa($request->id_siswa);
+            $oldDataSiswa = $this->_get_siswa_by_nis($request->daftar_nis);
             $imageName = null;
             $oriImageName = null;
             if(!is_null($request->image)){
@@ -146,26 +187,45 @@ class PendaftaranEkskulController extends Controller
                 $oriImageName = $oldDataSiswa->ori_foto;
             }
 
-            $data_siswa = array(
-                'nis' => $request->daftar_nis,
-                'nama' => $request->daftar_nama,
-                'kelas' => $request->daftar_kelas,
-                'alamat' => $request->daftar_alamat,
-                'tempat_lahir' => $request->daftar_tempat_lahir,
-                'jenis_kelamin' => $request->daftar_jk,
-                'tanggal_lahir' => $request->daftar_tgl_lahir,
-                'no_telp' => $request->daftar_no_telp,
-                'ori_foto' => $oriImageName,
-                'gen_foto' => $imageName
-            );
-            DB::table('siswa')->where('id', '=', $request->id_siswa)->update($data_siswa);
-            
-            $data_daftar_ekskul = array(
-                'id_siswa' => $request->id_siswa,
-                'id_ekskul' => $request->daftar_ekskul
-            );
+            $oldDataSiswa->nis = $request->daftar_nis;
+            $oldDataSiswa->nama = $request->daftar_nama;
+            $oldDataSiswa->kelas = $request->daftar_kelas;
+            $oldDataSiswa->alamat = $request->daftar_alamat;
+            $oldDataSiswa->tempat_lahir = $request->daftar_tempat_lahir;
+            $oldDataSiswa->jenis_kelamin = $request->daftar_jk;
+            $oldDataSiswa->tanggal_lahir = $request->daftar_tgl_lahir;
+            $oldDataSiswa->no_telp = $request->daftar_no_telp;
+            $oldDataSiswa->ori_foto = $oriImageName;
+            $oldDataSiswa->gen_foto = $imageName;
+            $oldDataSiswa->save();
 
-            DB::table('pendaftaran_ekskul')->where('id', '=', $request->id_pendaftaran)->update($data_daftar_ekskul);
+            $oldPendaftaran = $this->_get_pendaftaran_already_exist_by_id($request->id_pendaftaran);
+            $oldPendaftaran->id_siswa = $oldDataSiswa->id;
+            $oldPendaftaran->id_ekskul = $request->daftar_ekskul; 
+            $oldPendaftaran->id_ekskul_opt = $request->daftar_ekskul_opt; 
+            $oldPendaftaran->save();
+
+            // $data_siswa = array(
+            //     'nis' => $request->daftar_nis,
+            //     'nama' => $request->daftar_nama,
+            //     'kelas' => $request->daftar_kelas,
+            //     'alamat' => $request->daftar_alamat,
+            //     'tempat_lahir' => $request->daftar_tempat_lahir,
+            //     'jenis_kelamin' => $request->daftar_jk,
+            //     'tanggal_lahir' => $request->daftar_tgl_lahir,
+            //     'no_telp' => $request->daftar_no_telp,
+            //     'ori_foto' => $oriImageName,
+            //     'gen_foto' => $imageName
+            // );
+            // DB::table('siswa')->where('id', '=', $request->id_siswa)->update($data_siswa);
+            
+            // $data_daftar_ekskul = array(
+            //     'id_siswa' => $request->id_siswa,
+            //     'id_ekskul' => $request->daftar_ekskul,
+            //     'id_ekskul_opt' => $request->daftar_ekskul_opt
+            // );
+
+            // DB::table('pendaftaran_ekskul')->where('id', '=', $request->id_pendaftaran)->update($data_daftar_ekskul);
 
             $image_path = public_path('images/') . $oldDataSiswa->gen_foto;
             
@@ -174,7 +234,11 @@ class PendaftaranEkskulController extends Controller
             }
 
             DB::commit();
-            $request->image->move(public_path('images'), $imageName);
+
+            if(!is_null($request->image)){
+                $request->image->move(public_path('images'), $imageName);
+            }
+
             $this->result->status = true;
             $this->result->message = 'Data berhasil disimpan.';
         } catch (\Throwable $th) {
@@ -206,6 +270,21 @@ class PendaftaranEkskulController extends Controller
     private function _get_siswa($id){
         $siswa = DB::table('siswa')->where('id', '=', $id)->first();
         return $siswa;
+    }
+
+    private function _get_siswa_by_nis($nis){
+        $siswa = Siswa::where('nis', '=', $nis)->first();
+        return $siswa;
+    }
+
+    private function _get_pendaftaran_already_exist_by_id($id_pendaftaran){
+        $pendaftaran = PendaftaranEkskul::where('id', '=', $id_pendaftaran)->first();
+        return $pendaftaran;
+    }
+
+    private function _get_pendaftaran_already_exist($id_siswa, $id_ekskul){
+        $pendaftaran = PendaftaranEkskul::where([['id_siswa', '=', $id_siswa], ['id_ekskul', '=', $id_ekskul]])->first();
+        return $pendaftaran;
     }
 
     public function get_ekskul(Request $request)

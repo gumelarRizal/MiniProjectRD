@@ -115,28 +115,6 @@
                   <label for="daftar-tgl-lahir">Tgl Lahir</label>
                   <input type="date" class="form-control" name="daftar_tgl_lahir" id="daftar-tgl-lahir" placeholder="Tgl Lahir">
                 </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-ekskul">Ekskul Wajib</label>
-                  <select class="form-control" name="daftar_ekskul" id="daftar-ekskul" placeholder="Pilih Ekskul Wajib">
-                    <option value="">--Pilih--</option>
-                    @foreach ($ekskuls as $item)
-                      <option value="<?php echo $item->id; ?>">
-                        Ekskul: <?php echo $item->nama_ekskul; ?> - Hari: <?php echo $item->hari; ?> - Pelatih: <?php echo $item->nama_pelatih; ?>
-                      </option>
-                    @endforeach
-                  </select>
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-ekskul">Ekskul Optional</label>
-                  <select class="form-control" name="daftar_ekskul_opt" id="daftar-ekskul-opt" placeholder="Pilih Ekskul Optional">
-                    <option value="">--Pilih--</option>
-                    @foreach ($ekskulsOpt as $item)
-                      <option value="<?php echo $item->id; ?>">
-                        Ekskul: <?php echo $item->nama_ekskul; ?> - Hari: <?php echo $item->hari; ?> - Pelatih: <?php echo $item->nama_pelatih; ?>
-                      </option>
-                    @endforeach
-                  </select>
-                </div>
                 <div class="form-group col-sm-3">
                   <label for="daftar-tgl-lahir">Foto</label>
                   <p><img src="" class="img img-rounded" id="upload-target" width="100%"></p>
@@ -201,7 +179,7 @@
               { render: renderActionButton, targets: -1 },
           ];
 
-          tableData = setDataTable('#table-data', "{{url('daftar_ekskul/read')}}", colDef, reqData, reqOrder);
+          tableData = setDataTable('#table-data', "{{url('input_nilai/read')}}", colDef, reqData, reqOrder);
       }
 
       function renderActionButton(data, type, row){
@@ -233,7 +211,6 @@
         $("#daftar-tempat-lahir").val(data[0].tempat_lahir);
         $("#daftar-tgl-lahir").val(data[0].tanggal_lahir);
         $("#daftar-ekskul").val(data[0].id_ekskul);
-        $("#daftar-ekskul-opt").val(data[0].id_ekskul_opt);
         $("#upload-target").prop('src', "{{url('/')}}/images/" + data[0].gen_foto);
 
         $('#modal-daftar-ekskul').modal();

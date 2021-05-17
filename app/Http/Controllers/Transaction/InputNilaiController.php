@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\Report;
+namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use stdClass;
+
 use function App\Helpers\data_table;
 use function App\Helpers\data_table_total;
 use Illuminate\Support\Facades\DB;
 
-class LaporanEkskulController extends Controller
+class InputNilaiController extends Controller
 {
     private $data;
     private $result;
@@ -34,32 +35,18 @@ class LaporanEkskulController extends Controller
      */
     public function index()
     {
-        $pages = "Menu Laporan Ekskul";
+        $pages = "Menu Input Nilai";
+        
+        // $ekskuls = DB::table('ekskul')
+        //     ->select('ekskul.id','ekskul.nama_ekskul', 'jadwal_ekskul.hari', 'jadwal_ekskul.tempat', 'pelatih.nama as nama_pelatih')
+        //     ->join('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul')
+        //     ->join('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id')
+        //     ->get();
+
         return view(
-            'Report.LaporanEkskul',
+            'Transaction.InputNilai',
             ['pages' => $pages]
         );
-    }
-
-    public function read(Request $request){
-        $select = array(
-            'ekskul.nama_ekskul',
-            DB::raw('count(1) as jumlah_pendaftar'),
-        );
-        $from = 'pendaftaran_ekskul';
-        $where = null;
-        $join = array(
-            array('ekskul', 'pendaftaran_ekskul.id_ekskul', '=', 'ekskul.id')
-        );
-        $group_by = "pendaftaran_ekskul.id_ekskul";
-        
-        $this->result->status = true;
-        $this->result->draw = $request->draw;
-        $this->result->data = data_table($request, $select, $from ,$where , $join, $group_by);
-        $this->result->recordsTotal = data_table_total($request, $select, $from,false,$where , $join, $group_by)->count();
-        $this->result->recordsFiltered = data_table_total($request, $select, $from,true,$where , $join, $group_by)->count();
-
-        return response()->json($this->result);
     }
 
     /**
