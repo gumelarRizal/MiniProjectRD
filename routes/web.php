@@ -54,5 +54,6 @@ Route::group(['middleware'=>'CekLoginMiddleware'], function(){
     Route::group(['prefix'=>'input_nilai'], function() {
         Route::get('/', [InputNilaiController::class,'index'])->name('input_nilai');
         Route::post('/read', [InputNilaiController::class,'read'])->name('input_nilai.read');
+        Route::post('/store', [InputNilaiController::class,'store'])->name('input_nilai.store');
     });
 });

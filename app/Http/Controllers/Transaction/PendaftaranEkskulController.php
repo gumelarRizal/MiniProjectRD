@@ -75,6 +75,7 @@ class PendaftaranEkskulController extends Controller
             'pendaftaran_ekskul.id_ekskul',
             'pendaftaran_ekskul.id_ekskul_opt',
             'siswa.gen_foto',
+            'ekskul_2.nama_ekskul as nama_ekskul_opt',
         );
         $from = 'pendaftaran_ekskul';
         $where = null;
@@ -83,7 +84,8 @@ class PendaftaranEkskulController extends Controller
             array('siswa', 'pendaftaran_ekskul.id_siswa', '=', 'siswa.id'),
             array('pembina', 'ekskul.id_pembina', '=', 'pembina.id', 'left'),
             array('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul', 'left'),
-            array('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id', 'left')
+            array('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id', 'left'),
+            array('ekskul as ekskul_2', 'pendaftaran_ekskul.id_ekskul_opt', '=', 'ekskul_2.id', 'left'),
         );
         
         $this->result->status = true;

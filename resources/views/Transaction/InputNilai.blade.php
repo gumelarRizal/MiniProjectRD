@@ -43,8 +43,9 @@
                     <th data-orderable="false" data-data="id_pendaftaran" data-visible="false">ID</th>
                     <th data-orderable="true" data-data="nama_siswa">Siswa</th>
                     <th data-orderable="true" data-data="nama_ekskul">Ekskul</th>
-                    <th data-orderable="true" data-data="nama_pembina">Pembina</th>
-                    <th data-orderable="true" data-data="nama_pelatih">Pelatih</th>
+                    <th data-orderable="true" data-data="nilai_ekskul_wajib">Nilai Ekskul Wajib</th>
+                    <th data-orderable="true" data-data="nama_ekskul_opt">Ekskul Optional</th>
+                    <th data-orderable="true" data-data="nilai_ekskul_opt">Nilai Ekskul Optional</th>
                     <th data-orderable="false">Aksi</th>
                 </tr>
             </thead>
@@ -59,11 +60,11 @@
 @endsection
 
 @section('modal')
-<div id="modal-daftar-ekskul" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+<div id="modal-input-nilai" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm" role="document">
       <div class="modal-content">
           <div class="modal-header">
-              <h3 class="modal-title"> Daftar Eskskul</h3> 
+              <h3 class="modal-title" id="modal-title"> Input Nilai </h3> 
               <button type="button" class="close" data-dismiss="modal">
                   <span>&times;</span>
               </button>                  
@@ -74,59 +75,15 @@
             <div class="modal-body">
               <div class="row">
                 <input type="hidden" name="id_pendaftaran" id="id-pendaftaran">
-                <input type="hidden" name="id_siswa" id="id-siswa">
-                <div class="form-group col-sm-6">
-                  <label for="daftar-nis">NIS</label>
-                  <input type="text" class="form-control" name="daftar_nis" id="daftar-nis" placeholder="NIS">
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-nama">Nama</label>
-                  <input type="text" class="form-control" name="daftar_nama" id="daftar-nama" placeholder="Nama">
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-kelas">Kelas</label>
-                  <input type="text" class="form-control" name="daftar_kelas" id="daftar-kelas" placeholder="Kelas">
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-alamat">Alamat</label>
-                  <textarea class="form-control" name="daftar_alamat" id="daftar-alamat" placeholder="Alamat" rows="3" style="height: 100px;"></textarea>
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-tgl-lahir">No Telepon</label>
-                  <input type="text" class="form-control" name="daftar_no_telp" id="daftar-no-telp" placeholder="No Telepon">
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-jk">Jenis Kelamin</label>
-                  {{-- <input type="text" class="form-control" id="daftar-jk" placeholder="NIS"> --}}
-                  <div class="form-check">
-                    <input class="form-check-input" type="radio" name="daftar_jk" id="daftar-jk-laki" value="L">
-                    <label class="form-check-label" for="daftar-jk-laki">Laki-laki</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="radio" name="daftar_jk" id="daftar-jk-perempuan" value="P">
-                    <label class="form-check-label" for="daftar-jk-perempuan">Perempuan</label>
-                  </div>
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-tempat-lahir">Tempat Lahir</label>
-                  <input type="text" class="form-control" name="daftar_tempat_lahir" id="daftar-tempat-lahir" placeholder="Tempat Lahir">
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="daftar-tgl-lahir">Tgl Lahir</label>
-                  <input type="date" class="form-control" name="daftar_tgl_lahir" id="daftar-tgl-lahir" placeholder="Tgl Lahir">
-                </div>
-                <div class="form-group col-sm-3">
-                  <label for="daftar-tgl-lahir">Foto</label>
-                  <p><img src="" class="img img-rounded" id="upload-target" width="100%"></p>
-                  <label class="form-control btn btn-info">
-                  <input type="file" class="form-control" name="image" id="daftar-foto" data-target="#upload-target" 
-                    data-default="{{asset('assets/img/avatar/avatar-1.png')}}" style="display: none;"> Unggah Foto
-                  </label>
+                <input type="hidden" name="tipe_nilai" id="tipe-nilai">
+                <div class="form-group col-sm-12">
+                  <label for="daftar-nis">Masukan Nilai</label>
+                  <input type="number" class="form-control" name="input_nilai" id="input-nilai" placeholder="Nilai">
                 </div>
               </div>
             </div>
             <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">Daftar</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
             </div>
           </form>
@@ -144,29 +101,30 @@
     <script>
       $('#form-data').validate({
         rules: {
-          daftar_nis: {required: true, minlength: 8},
-          daftar_nama: {required: true, maxlength: 50},
-          daftar_kelas: {required: true, maxlength: 8},
-          daftar_alamat: {required: true, maxlength: 200},
-          daftar_no_telp: {required: true, maxlength: 12},
-          daftar_jk: {required: true},
-          daftar_tempat_lahir: {required: true, maxlength: 20},
-          daftar_tgl_lahir: {required: true},
-          daftar_ekskul: {required: true},
+          input_nilai: {required: true}
         },
         submitHandler: function(form) {
-          ajaxData("{{ url('daftar_ekskul') }}/"+action+"", new FormData(form), refresh, true);
+          ajaxData("{{ url('input_nilai') }}/"+action+"", new FormData(form), refresh, true);
         }
       });
 
-      function displayModalDaftar(){
+      function displayInputNilaiModal(id, type){
         resetForm('#form-data');
-        action = "daftar";
-        $('#modal-daftar-ekskul').modal();
+        action = "store";
+        
+        if(type == 1){
+          $("#modal-title").html("Input Nilai Ekskul Wajib");
+        }
+        else{
+          $("#modal-title").html("Input Nilai Ekskul Optional");
+        }
+        $("#id-pendaftaran").val(id);
+        $("#tipe-nilai").val(type);
+        $('#modal-input-nilai').modal();
       }
 
       function refresh(result) {
-          $('#modal-daftar-ekskul').modal('hide');
+          $('#modal-input-nilai').modal('hide');
 
           alertSuccess(result.message);
           tableData.draw(false);
@@ -177,19 +135,39 @@
           var reqData = null;
           var colDef = [
               { render: renderActionButton, targets: -1 },
+              { render: renderNilaiEkskulWajib, targets: 4 },
+              { render: renderEkskulOpt, targets: 5 },
+              { render: renderNilaiEkskulOpt, targets: 6 },
           ];
 
           tableData = setDataTable('#table-data', "{{url('input_nilai/read')}}", colDef, reqData, reqOrder);
       }
 
       function renderActionButton(data, type, row){
-        var button = '<button type="button" class="btn btn-info btn-xs" onclick="detailData(\'' + row.id_pendaftaran + '\')"><i class="far fa-edit"></i></button>'+
-                     '<button type="button" class="btn btn-danger btn-xs ml-1" onclick="swalDeleteConfirm(\'' + row.id_pendaftaran + '\')"><i class="far fa-trash-alt"></i></button>';
+        var button = '<button type="button" class="btn btn-info btn-xs" onclick="displayInputNilaiModal(\'' + row.id_pendaftaran + '\', 1)"><i class="far fa-edit"></i> Ekskul Wajib</button>'+
+                     '<button type="button" class="btn btn-warning btn-xs ml-1" onclick="displayInputNilaiModal(\'' + row.id_pendaftaran + '\', 2)"><i class="far fa-edit"></i> Ekskul Optional</button>';
         return button;
       }
 
-      function deleteData(id){
+      function renderNilaiEkskulWajib(data, type, row){
+        if(!row.nilai_ekskul_wajib)
+          return 'Tidak Ada';
+          
+        return row.nilai_ekskul_wajib;
+      }
 
+      function renderNilaiEkskulOpt(data, type, row){
+        if(!row.nilai_ekskul_optional)
+          return 'Tidak Ada';
+          
+        return row.nilai_ekskul_optional;
+      }
+
+      function renderEkskulOpt(data, type, row){
+        if(!row.nama_ekskul_opt)
+          return 'Tidak Ada';
+          
+        return row.nama_ekskul_opt;
       }
       
       function detailData(id){
@@ -213,7 +191,7 @@
         $("#daftar-ekskul").val(data[0].id_ekskul);
         $("#upload-target").prop('src', "{{url('/')}}/images/" + data[0].gen_foto);
 
-        $('#modal-daftar-ekskul').modal();
+        $('#modal-input-nilai').modal();
       }
 
       $(document).ready(function () {

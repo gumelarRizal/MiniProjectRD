@@ -42,9 +42,10 @@
                     <th data-orderable="false">#</th>
                     <th data-orderable="false" data-data="id_pendaftaran" data-visible="false">ID</th>
                     <th data-orderable="true" data-data="nama_siswa">Siswa</th>
-                    <th data-orderable="true" data-data="nama_ekskul">Ekskul</th>
+                    <th data-orderable="true" data-data="nama_ekskul">Ekskul Wajib</th>
                     <th data-orderable="true" data-data="nama_pembina">Pembina</th>
                     <th data-orderable="true" data-data="nama_pelatih">Pelatih</th>
+                    <th data-orderable="true" data-data="nama_ekskul_opt">Ekskul Optional</th>
                     <th data-orderable="false">Aksi</th>
                 </tr>
             </thead>
@@ -199,6 +200,7 @@
           var reqData = null;
           var colDef = [
               { render: renderActionButton, targets: -1 },
+              { render: renderEkskulOpt, targets: 6 },
           ];
 
           tableData = setDataTable('#table-data', "{{url('daftar_ekskul/read')}}", colDef, reqData, reqOrder);
@@ -210,8 +212,11 @@
         return button;
       }
 
-      function deleteData(id){
-
+      function renderEkskulOpt(data, type, row){
+        if(!row.nama_ekskul_opt)
+          return 'Tidak Ada';
+          
+        return row.nama_ekskul_opt;
       }
       
       function detailData(id){
