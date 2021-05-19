@@ -29,12 +29,10 @@
             </div>
           </div>  
         </form> --}}
-        <div class="text-left">
-          <button type="button" id="button-daftar-ekskul" class="btn btn-primary" onclick="displayModalDaftar()"><i class="fa fa-plus"></i> Daftar</button>
-          
-          {{-- <a href="" class="btn btn-info"><i class="fa fa-search"></i> Search</a> --}}
-          {{-- <a href="" class="btn btn-secondary"><i class="fa fa-redo-alt"></i> Reset</a> --}}
-        </div>
+        {{-- <div class="text-right">
+          <a href="" class="btn btn-info"><i class="fa fa-search"></i> Search</a>
+          <a href="" class="btn btn-secondary"><i class="fa fa-redo-alt"></i> Reset</a>
+        </div> --}}
         <hr>
         <table id="table-data" class="display table table-striped table-hover" width="100%">
             <thead>
@@ -45,7 +43,7 @@
                     <th data-orderable="true" data-data="nama_ekskul">Ekskul</th>
                     <th data-orderable="true" data-data="nilai_ekskul_wajib">Nilai Ekskul Wajib</th>
                     <th data-orderable="true" data-data="nama_ekskul_opt">Ekskul Optional</th>
-                    <th data-orderable="true" data-data="nilai_ekskul_opt">Nilai Ekskul Optional</th>
+                    <th data-orderable="true" data-data="nilai_ekskul_optional">Nilai Ekskul Optional</th>
                     <th data-orderable="false">Aksi</th>
                 </tr>
             </thead>
@@ -78,7 +76,8 @@
                 <input type="hidden" name="tipe_nilai" id="tipe-nilai">
                 <div class="form-group col-sm-12">
                   <label for="daftar-nis">Masukan Nilai</label>
-                  <input type="number" class="form-control" name="input_nilai" id="input-nilai" placeholder="Nilai">
+                  <input type="number" class="form-control" name="input_nilai" id="input-nilai" placeholder="Nilai"
+                  max="100">
                 </div>
               </div>
             </div>
@@ -101,7 +100,7 @@
     <script>
       $('#form-data').validate({
         rules: {
-          input_nilai: {required: true}
+          input_nilai: {required: true, max: 100}
         },
         submitHandler: function(form) {
           ajaxData("{{ url('input_nilai') }}/"+action+"", new FormData(form), refresh, true);
@@ -144,8 +143,12 @@
       }
 
       function renderActionButton(data, type, row){
-        var button = '<button type="button" class="btn btn-info btn-xs" onclick="displayInputNilaiModal(\'' + row.id_pendaftaran + '\', 1)"><i class="far fa-edit"></i> Ekskul Wajib</button>'+
-                     '<button type="button" class="btn btn-warning btn-xs ml-1" onclick="displayInputNilaiModal(\'' + row.id_pendaftaran + '\', 2)"><i class="far fa-edit"></i> Ekskul Optional</button>';
+        var button = '<button type="button" class="btn btn-info btn-xs" onclick="displayInputNilaiModal(\'' + row.id_pendaftaran + '\', 1)"><i class="far fa-edit"></i> Ekskul Wajib</button>';
+
+        if(row.nama_ekskul_opt){
+          button += '<button type="button" class="btn btn-warning btn-xs ml-1" onclick="displayInputNilaiModal(\'' + row.id_pendaftaran + '\', 2)"><i  class="far fa-edit"></i> Ekskul Optional</button>';
+        }
+
         return button;
       }
 

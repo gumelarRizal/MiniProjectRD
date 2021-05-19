@@ -73,7 +73,7 @@ function data_table(Request $request, $select, $from, $where = null, $join = nul
 }
 
 function data_table_total(Request $request,$select, $from, $filter = false, $where = null, $join = null, $group_by = null) {
-    $queryBuilder = DB::table($from)->select();
+    $queryBuilder = DB::table($from);
 
     if ( ! is_null($select)) {
         foreach ($select as $key => $value) {
