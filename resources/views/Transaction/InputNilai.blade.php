@@ -76,8 +76,8 @@
                 <input type="hidden" name="tipe_nilai" id="tipe-nilai">
                 <div class="form-group col-sm-12">
                   <label for="daftar-nis">Masukan Nilai</label>
-                  <input type="number" class="form-control" name="input_nilai" id="input-nilai" placeholder="Nilai"
-                  max="100">
+                  <input type="text" class="form-control" name="input_nilai" id="input-nilai" placeholder="Nilai"
+                  maxlength="2">
                 </div>
               </div>
             </div>
@@ -100,7 +100,7 @@
     <script>
       $('#form-data').validate({
         rules: {
-          input_nilai: {required: true, max: 100}
+          input_nilai: {required: true}
         },
         submitHandler: function(form) {
           ajaxData("{{ url('input_nilai') }}/"+action+"", new FormData(form), refresh, true);

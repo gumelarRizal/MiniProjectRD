@@ -64,8 +64,10 @@ function data_table(Request $request, $select, $from, $where = null, $join = nul
         }
     }
 
-    $queryBuilder->skip($request['start'])
-                ->take($request['length']);
+    if(($request['order']) && $request['length']){
+        $queryBuilder->skip($request['start'])
+                    ->take($request['length']);
+    }
     
     $result = $queryBuilder->get();
 

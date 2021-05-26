@@ -13,7 +13,30 @@
     <div class="row">
         <div class="col-12">
             <div class="card-body">
-                <table id="table-data" class="display table table-striped table-hover" width="100%">
+                <form id="form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="">Pilih Kelas</label>
+                                <select class="form-control" name="kelas" id="kelas" placeholder="Pilih Kelas">
+                                    <option value="">--Pilih--</option>
+                                    @foreach ($kelas as $item)
+                                      <option value="<?php echo $item->kelas; ?>">
+                                        <?php echo $item->kelas; ?>
+                                      </option>
+                                    @endforeach
+                                  </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-right">
+                                <button type="submit" class="btn btn-primary">Download</button>
+                            </div>
+                        </div>
+                    </div>  
+                </form>
+                
+                {{-- <table id="table-data" class="display table table-striped table-hover" width="100%">
                     <thead>
                         <tr>
                             <th data-orderable="false">#</th>
@@ -21,7 +44,7 @@
                             <th data-orderable="true" data-data="jumlah_pendaftar">Jumlah Pendaftar</th>
                         </tr>
                     </thead>
-                </table>
+                </table> --}}
             </div>
         </div>
     </div>
@@ -49,7 +72,19 @@
 
         $(document).ready(function () {
             setTableData();
+        });
 
+        $('#form-data').validate({
+            rules: {
+                kelas: {required: true}
+            },
+            submitHandler: function(form) {
+                let kelas = $("#kelas").val();
+                let url = "{{ route('laporan_ekskul.export', ':kelas') }}";
+                url = url.replace(':kelas', kelas);
+                document.location.href=url;
+                // ajaxData("{{ url('report') }}/exportToExcel", new FormData(form), null, true);
+            }
         });
 
         // var ctx = document.getElementById('myChart').getContext('2d');

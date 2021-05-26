@@ -49,6 +49,7 @@ Route::group(['middleware'=>'CekLoginMiddleware'], function(){
     Route::group(['prefix'=>'report'], function() {
         Route::get('/', [LaporanEkskulController::class,'index'])->name('laporan_ekskul.index');
         Route::post('/read', [LaporanEkskulController::class,'read'])->name('laporan_ekskul.read');
+        Route::get('/exportToExcel/{kelas}', [LaporanEkskulController::class,'exportToExcel'])->name('laporan_ekskul.export');
     });
 
     Route::group(['prefix'=>'input_nilai'], function() {
