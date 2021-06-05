@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class SiswaController extends Controller
 {
@@ -65,4 +66,115 @@ class SiswaController extends Controller
         DB::table('siswa')->where('ID',$id)->delete();
         return redirect()->back();
     }
+
+    //DANIAR ADD [START]
+    public function data()
+    {
+        $siswas = DB::table('siswa')->get();
+        return view('MasterData/Siswa/DataSiswa', compact('siswas'));
+    }
+
+    public function add()
+    {
+        $kelass = DB::table('kelas')->get();
+        return view('MasterData/Siswa/AddSiswa', compact('kelass'));
+    }
+
+    public function addProcess(Request $request)
+    {
+        $request->validate([
+            'nis' => 'required|unique:siswa,nis',
+            'nama' => 'required',
+            'no_telp' => 'required',
+            'tempat_lahir' => 'required',
+        ], [
+            'nis.required' => 'NIS Siswa Tidak Boleh Kosong !',
+            'nis.unique' => 'NIS Siswa Sudah Ada !',
+            'nama.required' => 'Nama Siswa Tidak Boleh Kosong !',
+            'no_telp.required' => 'No HP Tidak Boleh Kosong !',
+            'tempat_lahir.required' => 'Tempat Lahir Tidak Boleh Kosong !',
+        ]);
+
+        if(!is_null($request->image)){
+            $imageName = time().'_'.$request->image->getClientOriginalName(); 
+            $request->image->move(public_path('images'), $imageName);
+        }
+
+        DB::table('siswa')->insert([
+                'nis' => $request->nis,
+                'nama' => $request->nama,
+                'kelas' => $request->kelas,
+                'alamat' => $request->alamat,
+                'tempat_lahir' => $request->tempat_lahir,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'no_telp' => $request->no_telp,
+                'ori_foto' => $imageName
+            ]);
+        
+        return redirect('siswa')->with('status', 'Data Berhasil diTambah !');
+    }
+
+    public function edit($id)
+    {
+        $siswaa = DB::table('siswa')->where('id', $id)->first();
+        $kelass = DB::table('kelas')->get();
+        return view('MasterData/Siswa/EditSiswa', compact('kelass','siswaa'));
+    }
+
+    public function editProcess(Request $request, $id)
+    {
+        $request->validate([
+            'nis' => ['required', Rule::unique('siswa','nis')->ignore($id)],
+            'nama' => 'required',
+            'no_telp' => 'required',
+            'tempat_lahir' => 'required',
+        ], [
+            'nis.required' => 'NIS Siswa Tidak Boleh Kosong !',
+            'nis.unique' => 'NIS Siswa Sudah Ada !',
+            'nama.required' => 'Nama Siswa Tidak Boleh Kosong !',
+            'no_telp.required' => 'No HP Tidak Boleh Kosong !',
+            'tempat_lahir.required' => 'Tempat Lahir Tidak Boleh Kosong !',
+        ]);
+
+        if(!is_null($request->image)){
+            $imageName = time().'_'.$request->image->getClientOriginalName(); 
+            $request->image->move(public_path('images'), $imageName);
+        }
+
+        if($request->has('image')){
+            DB::table('siswa')->where('id', $id)->update([
+                'nis' => $request->nis,
+                'nama' => $request->nama,
+                'kelas' => $request->kelas,
+                'alamat' => $request->alamat,
+                'tempat_lahir' => $request->tempat_lahir,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'no_telp' => $request->no_telp,
+                'ori_foto' => $imageName
+            ]);
+        }else{
+            DB::table('siswa')->where('id', $id)->update([
+                'nis' => $request->nis,
+                'nama' => $request->nama,
+                'kelas' => $request->kelas,
+                'alamat' => $request->alamat,
+                'tempat_lahir' => $request->tempat_lahir,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'no_telp' => $request->no_telp
+            ]);
+        }
+
+        return redirect('siswa')->with('status', 'Data Berhasil diUbah !');
+    }
+
+    public function delete_siswa($id)
+    {
+        DB::table('siswa')->where('id', $id)->delete();
+        return redirect('siswa')->with('status', 'Data Berhasil diHapus !');
+    }
+    //DANIAR ADD [END]
+//Last Code
 }
