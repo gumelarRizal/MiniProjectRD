@@ -7,9 +7,11 @@ use App\Http\Controllers\MasterData\SiswaController;
 use App\Http\Controllers\MasterData\PembinaController;
 use App\Http\Controllers\MasterData\KelasController;
 use App\Http\Controllers\MasterData\EkskulController;
+use App\Http\Controllers\MasterData\Jadwal_EkskulController;
 use App\Http\Controllers\Report\LaporanEkskulController;
 use App\Http\Controllers\Transaction\PendaftaranEkskulController;
 use App\Http\Controllers\Transaction\InputNilaiController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -69,6 +71,14 @@ Route::get('crud', [CRUD::class,'Index']);
     Route::get('/siswa/edit/{id}', [SiswaController::class, 'edit']);
     Route::post('/siswa/editProcess/{id}', [SiswaController::class, 'editProcess']);
     Route::delete('/siswa/delete/{id}', [SiswaController::class, 'delete_siswa']);
+
+    //[DANIAR] Jadwal Ekskul
+    Route::get('/jadwal_ekskul', [Jadwal_EkskulController::class, 'data'])->name('jadwal_ekskul');
+    Route::get('/jadwal_ekskul/add', [Jadwal_EkskulController::class, 'add']);
+    Route::post('/jadwal_ekskul/addProcess', [Jadwal_EkskulController::class, 'addProcess']);
+    Route::get('/jadwal_ekskul/edit/{id}', [Jadwal_EkskulController::class, 'edit']);
+    Route::post('/jadwal_ekskul/editProcess/{id}', [Jadwal_EkskulController::class, 'editProcess']);
+    Route::delete('/jadwal_ekskul/delete/{id}', [Jadwal_EkskulController::class, 'delete']);
 
     Route::group(['prefix'=>'daftar_ekskul'], function() {
         Route::get('/', [PendaftaranEkskulController::class,'index'])->name('daftar_ekskul');
