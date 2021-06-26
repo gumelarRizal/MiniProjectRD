@@ -35,16 +35,16 @@ class PendaftaranEkskulController extends Controller
     public function index()
     {
         $pages = "Menu Pendaftaran Ekskul";
-        
+
         $ekskuls = DB::table('ekskul')
-            ->select('ekskul.id','ekskul.nama_ekskul', 'jadwal_ekskul.hari', 'jadwal_ekskul.tempat', 'pelatih.nama as nama_pelatih')
+            ->select('ekskul.id', 'ekskul.nama_ekskul', 'jadwal_ekskul.hari', 'jadwal_ekskul.tempat', 'pelatih.nama as nama_pelatih')
             ->join('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul')
             ->join('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id')
             ->where('category', '=', '1')
             ->get();
 
         $ekskulsOpt = DB::table('ekskul')
-            ->select('ekskul.id','ekskul.nama_ekskul', 'jadwal_ekskul.hari', 'jadwal_ekskul.tempat', 'pelatih.nama as nama_pelatih')
+            ->select('ekskul.id', 'ekskul.nama_ekskul', 'jadwal_ekskul.hari', 'jadwal_ekskul.tempat', 'pelatih.nama as nama_pelatih')
             ->join('jadwal_ekskul', 'ekskul.id', '=', 'jadwal_ekskul.id_ekskul')
             ->join('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id')
             ->where('category', '=', '0')
@@ -52,11 +52,12 @@ class PendaftaranEkskulController extends Controller
 
         return view(
             'Transaction.PendaftaranEkskul',
-            ['pages' => $pages, 'ekskuls'=>$ekskuls, 'ekskulsOpt'=>$ekskulsOpt]
+            ['pages' => $pages, 'ekskuls' => $ekskuls, 'ekskulsOpt' => $ekskulsOpt]
         );
     }
 
-    public function read(Request $request){
+    public function read(Request $request)
+    {
         $select = array(
             'pendaftaran_ekskul.id as id_pendaftaran',
             'siswa.nama as nama_siswa',
@@ -87,12 +88,12 @@ class PendaftaranEkskulController extends Controller
             array('pelatih', 'jadwal_ekskul.id_pelatih', '=', 'pelatih.id', 'left'),
             array('ekskul as ekskul_2', 'pendaftaran_ekskul.id_ekskul_opt', '=', 'ekskul_2.id', 'left'),
         );
-        
+
         $this->result->status = true;
         $this->result->draw = $request->draw;
-        $this->result->data = data_table($request, $select, $from ,$where , $join);
-        $this->result->recordsTotal = data_table_total($request, $select, $from,false,$where , $join)->count();
-        $this->result->recordsFiltered = data_table_total($request, $select, $from,true,$where , $join)->count();
+        $this->result->data = data_table($request, $select, $from, $where, $join);
+        $this->result->recordsTotal = data_table_total($request, $select, $from, false, $where, $join)->count();
+        $this->result->recordsFiltered = data_table_total($request, $select, $from, true, $where, $join)->count();
 
         return response()->json($this->result);
     }
@@ -100,16 +101,17 @@ class PendaftaranEkskulController extends Controller
     public function daftar(Request $request)
     {
         $oldDataSiswa = $this->_get_siswa_by_nis($request->daftar_nis);
-        $oldPendaftaran = $this->_get_pendaftaran_already_exist($oldDataSiswa->id, $request->daftar_ekskul);
-        if($oldPendaftaran){
-            $this->result->status = false;
-            $this->result->message = 'Siswa ini telah mendaftar diekskul yang dituju. ';
-            return response()->json($this->result);
-        }
 
-        if($oldDataSiswa){
+        if ($oldDataSiswa) {
+            $oldPendaftaran = $this->_get_pendaftaran_already_exist($oldDataSiswa->id, $request->daftar_ekskul);
+            if ($oldPendaftaran) {
+                $this->result->status = false;
+                $this->result->message = 'Siswa ini telah mendaftar diekskul yang dituju. ';
+                return response()->json($this->result);
+            }
+
             return $this->update_daftar($request);
-        }else{
+        } else {
 
             DB::beginTransaction();
             try {
@@ -117,15 +119,13 @@ class PendaftaranEkskulController extends Controller
                 $imageName = null;
                 $oriImageName = null;
 
-                if(!is_null($request->image)){
-                    $imageName = time().'.'.$request->image->extension(); 
+                if (!is_null($request->image)) {
+                    $imageName = time() . '.' . $request->image->extension();
                     $oriImageName = $request->image->getClientOriginalName();
                     $request->image->move(public_path('images'), $imageName);
                 }
 
-                
-
-                if(!$oldDataSiswa){
+                if (!$oldDataSiswa) {
                     $siswa = new Siswa();
                     $siswa->nis = $request->daftar_nis;
                     $siswa->nama = $request->daftar_nama;
@@ -138,8 +138,14 @@ class PendaftaranEkskulController extends Controller
                     $siswa->ori_foto = $oriImageName;
                     $siswa->gen_foto = $imageName;
                     $siswa->save();
-                }else{
-                    
+
+                    $pendaftaran = new PendaftaranEkskul();
+                    $pendaftaran->id_siswa = $siswa->id;
+                    $pendaftaran->id_ekskul = $request->daftar_ekskul;
+                    $pendaftaran->id_ekskul_opt = $request->daftar_ekskul_opt;
+                    $pendaftaran->save();
+                } else {
+
                     $this->update_daftar($request);
                     // $oldDataSiswa->nis = $request->daftar_nis;
                     // $oldDataSiswa->nama = $request->daftar_nama;
@@ -181,10 +187,10 @@ class PendaftaranEkskulController extends Controller
             $oldDataSiswa = $this->_get_siswa_by_nis($request->daftar_nis);
             $imageName = null;
             $oriImageName = null;
-            if(!is_null($request->image)){
-                $imageName = time().'.'.$request->image->extension(); 
+            if (!is_null($request->image)) {
+                $imageName = time() . '.' . $request->image->extension();
                 $oriImageName = $request->image->getClientOriginalName();
-            }else{
+            } else {
                 $imageName = $oldDataSiswa->gen_foto;
                 $oriImageName = $oldDataSiswa->ori_foto;
             }
@@ -203,8 +209,8 @@ class PendaftaranEkskulController extends Controller
 
             $oldPendaftaran = $this->_get_pendaftaran_already_exist_by_id($request->id_pendaftaran);
             $oldPendaftaran->id_siswa = $oldDataSiswa->id;
-            $oldPendaftaran->id_ekskul = $request->daftar_ekskul; 
-            $oldPendaftaran->id_ekskul_opt = $request->daftar_ekskul_opt; 
+            $oldPendaftaran->id_ekskul = $request->daftar_ekskul;
+            $oldPendaftaran->id_ekskul_opt = $request->daftar_ekskul_opt;
             $oldPendaftaran->save();
 
             // $data_siswa = array(
@@ -220,7 +226,7 @@ class PendaftaranEkskulController extends Controller
             //     'gen_foto' => $imageName
             // );
             // DB::table('siswa')->where('id', '=', $request->id_siswa)->update($data_siswa);
-            
+
             // $data_daftar_ekskul = array(
             //     'id_siswa' => $request->id_siswa,
             //     'id_ekskul' => $request->daftar_ekskul,
@@ -230,14 +236,14 @@ class PendaftaranEkskulController extends Controller
             // DB::table('pendaftaran_ekskul')->where('id', '=', $request->id_pendaftaran)->update($data_daftar_ekskul);
 
             $image_path = public_path('images/') . $oldDataSiswa->gen_foto;
-            
-            if(File::exists($image_path)) {
+
+            if (File::exists($image_path)) {
                 File::delete($image_path);
             }
 
             DB::commit();
 
-            if(!is_null($request->image)){
+            if (!is_null($request->image)) {
                 $request->image->move(public_path('images'), $imageName);
             }
 
@@ -250,10 +256,10 @@ class PendaftaranEkskulController extends Controller
         }
 
         return response()->json($this->result);
-
     }
 
-    public function delete_daftar(Request $request){
+    public function delete_daftar(Request $request)
+    {
         DB::beginTransaction();
         try {
             DB::table('pendaftaran_ekskul')->where('id', '=', $request->id_pendaftaran)->delete();
@@ -269,22 +275,26 @@ class PendaftaranEkskulController extends Controller
         return response()->json($this->result);
     }
 
-    private function _get_siswa($id){
+    private function _get_siswa($id)
+    {
         $siswa = DB::table('siswa')->where('id', '=', $id)->first();
         return $siswa;
     }
 
-    private function _get_siswa_by_nis($nis){
+    private function _get_siswa_by_nis($nis)
+    {
         $siswa = Siswa::where('nis', '=', $nis)->first();
         return $siswa;
     }
 
-    private function _get_pendaftaran_already_exist_by_id($id_pendaftaran){
+    private function _get_pendaftaran_already_exist_by_id($id_pendaftaran)
+    {
         $pendaftaran = PendaftaranEkskul::where('id', '=', $id_pendaftaran)->first();
         return $pendaftaran;
     }
 
-    private function _get_pendaftaran_already_exist($id_siswa, $id_ekskul){
+    private function _get_pendaftaran_already_exist($id_siswa, $id_ekskul)
+    {
         $pendaftaran = PendaftaranEkskul::where([['id_siswa', '=', $id_siswa], ['id_ekskul', '=', $id_ekskul]])->first();
         return $pendaftaran;
     }
